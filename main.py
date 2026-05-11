@@ -18,49 +18,72 @@ from health_advisor import HealthAdvisor
 
 
 class MainWindow(QMainWindow):
-    
+
     def __init__(self):
         super().__init__()
 
-        # ===== ตั้งค่าหน้าต่าง =====
+        # ตั้งชื่อโปรแกรม
         self.setWindowTitle(
             "โปรแกรมคำนวณ BMI"
         )
 
+        # ขนาดหน้าต่าง
         self.resize(400, 300)
-        
+
+        # =========================
+        # BMI Theme Style
+        # =========================
         self.setStyleSheet("""
 
         QMainWindow {
-            background-color: #f5f5f5;
+            background-color: #EAF7F0;
+        }
+
+        QWidget {
+            background-color: #EAF7F0;
+            font-family: Segoe UI;
         }
 
         QLabel {
+            color: #1B4332;
             font-size: 16px;
-            color: #333333;
+            font-weight: bold;
         }
 
         QLineEdit {
-            padding: 8px;
+            background-color: white;
+            border: 2px solid #95D5B2;
+            border-radius: 12px;
+            padding: 10px;
             font-size: 14px;
-            border: 2px solid #cccccc;
-            border-radius: 8px;
-            background-color: black;
+            color: #333333;
+        }
+
+        QLineEdit:focus {
+            border: 2px solid #2D6A4F;
         }
 
         QPushButton {
-            background-color: #4CAF50;
+            background-color: #2D6A4F;
             color: white;
             font-size: 15px;
-            padding: 10px;
-            border-radius: 10px;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 12px;
         }
 
         QPushButton:hover {
-            background-color: #45a049;
+            background-color: #40916C;
+        }
+
+        QPushButton:pressed {
+            background-color: #1B4332;
         }
 
         """)
+
+        # ===== Stacked Widget =====
+        self.stack = QStackedWidget()
         # ===== สร้าง stacked widget =====
         self.stack = QStackedWidget()
 
@@ -129,7 +152,41 @@ class MainWindow(QMainWindow):
             # รับคำแนะนำ + ลิงก์
             status, advice, link = HealthAdvisor.get_advice(
                 bmi
+            )  # รับคำแนะนำ + ลิงก์
+            status, advice, link = HealthAdvisor.get_advice(
+                bmi
             )
+            # เปลี่ยนสีตามสถานะ BMI
+            if status == "ผอม":
+
+                self.result_page.result_label.setStyleSheet(
+                    """
+                    color: #2196F3;
+                    font-size: 20px;
+                    font-weight: bold;
+                    """
+                )
+
+            elif status == "ปกติ":
+
+                self.result_page.result_label.setStyleSheet(
+                    """
+                    color: #2E7D32;
+                    font-size: 20px;
+                    font-weight: bold;
+                    """
+                )
+
+            else:
+
+                self.result_page.result_label.setStyleSheet(
+                    """
+                    color: #D32F2F;
+                    font-size: 20px;
+                    font-weight: bold;
+                    """
+                )
+        
 
             # แสดงผลลัพธ์
             self.result_page.result_label.setText(

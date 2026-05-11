@@ -38,7 +38,7 @@ class InputPage(QWidget):
 
         # ===== ปุ่มคำนวณ =====
         self.calculate_button = QPushButton(
-            "คำนวณ BMI"
+            "💚คำนวณ BMI"
         )
 
         # ===== เพิ่ม Widget =====

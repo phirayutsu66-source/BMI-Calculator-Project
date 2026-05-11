@@ -38,11 +38,8 @@ class ResultPage(QWidget):
         )
 
         # ===== ลิงก์อ่านเพิ่มเติม =====
-        self.link_label = QLabel(
-            '<a href="https://www.cdc.gov/bmi/index.html">'
-            'อ่านเพิ่มเติม'
-            '</a>'
-        )
+        self.link_label = QLabel()
+        
 
         self.link_label.setOpenExternalLinks(
             True
@@ -54,7 +51,7 @@ class ResultPage(QWidget):
 
         # ===== ปุ่มย้อนกลับ =====
         self.back_button = QPushButton(
-            "ย้อนกลับ"
+            "◀️ย้อนกลับ"
         )
 
         # ===== เพิ่ม Widget =====
