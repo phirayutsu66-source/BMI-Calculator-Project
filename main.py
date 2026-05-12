@@ -3,7 +3,7 @@
 # =========================
 
 import sys
-
+from database import Database
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -15,6 +15,7 @@ from input_page import InputPage
 from result_page import ResultPage
 from bmi_calculator import BMICalculator
 from health_advisor import HealthAdvisor
+from history_page import HistoryPage
 
 
 class MainWindow(QMainWindow):
@@ -22,19 +23,21 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.input_page = InputPage()
+        self.result_page = ResultPage()
+        self.history_page = HistoryPage()
         # ตั้งชื่อโปรแกรม
-        self.setWindowTitle(
-            "โปรแกรมคำนวณ BMI"
-        )
+        self.setWindowTitle("โปรแกรมคำนวณ BMI")
 
         # ขนาดหน้าต่าง
         self.resize(400, 300)
+
+        self.db = Database()
 
         # =========================
         # BMI Theme Style
         # =========================
         self.setStyleSheet("""
-
         QMainWindow {
             background-color: #EAF7F0;
         }
@@ -79,151 +82,98 @@ class MainWindow(QMainWindow):
         QPushButton:pressed {
             background-color: #1B4332;
         }
-
         """)
 
         # ===== Stacked Widget =====
         self.stack = QStackedWidget()
-        # ===== สร้าง stacked widget =====
-        self.stack = QStackedWidget()
 
-        # ===== สร้างหน้า =====
-        self.input_page = InputPage()
+        self.stack.addWidget(self.input_page)   # index 0
+        self.stack.addWidget(self.result_page)  # index 1
+        self.stack.addWidget(self.history_page) # index 2
 
-        self.result_page = ResultPage()
+        self.setCentralWidget(self.stack)
 
-        # ===== เพิ่มหน้า =====
-        self.stack.addWidget(
-            self.input_page
-        )
+        # ===== ปุ่ม =====
+        self.input_page.calculate_button.clicked.connect(self.calculate_bmi)
+        self.result_page.back_button.clicked.connect(self.go_back)
+        self.input_page.history_button.clicked.connect(self.show_history)
+        self.history_page.back_button.clicked.connect(self.go_back)
 
-        self.stack.addWidget(
-            self.result_page
-        )
+    def go_back(self):
+        self.stack.setCurrentWidget(self.input_page)
 
-        # ===== ตั้งหน้าหลัก =====
-        self.setCentralWidget(
-            self.stack
-        )
-
-        # ===== ปุ่มคำนวณ =====
-        self.input_page.calculate_button.clicked.connect(
-            self.calculate_bmi
-        )
-
-        # ===== ปุ่มย้อนกลับ =====
-        self.result_page.back_button.clicked.connect(
-            self.go_back
-        )
-
+        
     # =========================
     # คำนวณ BMI
     # =========================
     def calculate_bmi(self):
-            # =========================
+        print("test")
+
         try:
-            # รับค่าน้ำหนัก
-            weight = float(
-                self.input_page.weight_input.text()
-            )
+            weight = float(self.input_page.weight_input.text())
+            height = float(self.input_page.height_input.text())
 
-            # รับค่าส่วนสูง
-            height = float(
-                self.input_page.height_input.text()
-            )
-
-            # ตรวจสอบข้อมูล
             if weight <= 0 or height <= 0:
-
-                QMessageBox.warning(
-                    self,
-                    "ข้อผิดพลาด",
-                    "กรุณากรอกค่ามากกว่า 0"
-                )
-
+                QMessageBox.warning(self, "ข้อผิดพลาด", "กรุณากรอกค่ามากกว่า 0")
                 return
 
-            # คำนวณ BMI
-            bmi = BMICalculator.calculate(
-                weight,
-                height
-            )
+            bmi = BMICalculator.calculate(weight, height)
+            status, advice, link = HealthAdvisor.get_advice(bmi)
 
-            # รับคำแนะนำ + ลิงก์
-            status, advice, link = HealthAdvisor.get_advice(
-                bmi
-            )  # รับคำแนะนำ + ลิงก์
-            status, advice, link = HealthAdvisor.get_advice(
-                bmi
-            )
-            # เปลี่ยนสีตามสถานะ BMI
             if status == "ผอม":
-
-                self.result_page.result_label.setStyleSheet(
-                    """
-                    color: #2196F3;
-                    font-size: 20px;
-                    font-weight: bold;
-                    """
-                )
+                self.result_page.result_label.setStyleSheet("""
+                color: #2196F3;
+                font-size: 20px;
+                font-weight: bold;
+                """)
 
             elif status == "ปกติ":
-
-                self.result_page.result_label.setStyleSheet(
-                    """
-                    color: #2E7D32;
-                    font-size: 20px;
-                    font-weight: bold;
-                    """
-                )
+                self.result_page.result_label.setStyleSheet("""
+                color: #2E7D32;
+                font-size: 20px;
+                font-weight: bold;
+                """)
 
             else:
+                self.result_page.result_label.setStyleSheet("""
+                color: #D32F2F;
+                font-size: 20px;
+                font-weight: bold;
+                """)
 
-                self.result_page.result_label.setStyleSheet(
-                    """
-                    color: #D32F2F;
-                    font-size: 20px;
-                    font-weight: bold;
-                    """
-                )
-        
-
-            # แสดงผลลัพธ์
             self.result_page.result_label.setText(
                 f"ค่า BMI : {bmi:.2f}\nสถานะ : {status}"
             )
 
-            # แสดงคำแนะนำ
-            self.result_page.advice_label.setText(
-                advice
-            )
+            self.result_page.advice_label.setText(advice)
+            self.result_page.link_label.setText(f'<a href="{link}">อ่านเพิ่มเติม</a>')
 
-            # เปลี่ยนลิงก์
-            self.result_page.link_label.setText(
-                f'<a href="{link}">อ่านเพิ่มเติม</a>'
-            )
-
-            # เปลี่ยนหน้า
-            self.stack.setCurrentWidget(
-                self.result_page
-            )
+            self.stack.setCurrentWidget(self.result_page)
 
         except:
+            QMessageBox.warning(self, "ข้อมูลไม่ถูกต้อง", "กรุณากรอกตัวเลขให้ถูกต้อง")
 
-            QMessageBox.warning(
-                self,
-                "ข้อมูลไม่ถูกต้อง",
-                "กรุณากรอกตัวเลขให้ถูกต้อง"
-            )
-    
     # =========================
-    # กลับหน้าแรก
+    # ประวัติ
     # =========================
-    def go_back(self):
+    def show_history(self):
+        try:
+           data = self.db.get_all()
 
-        self.stack.setCurrentWidget(
-            self.input_page
-        )
+           text = "📜 ประวัติการคำนวณ BMI\n\n"
+
+           for row in data:
+                _, name, weight, height, bmi, status = row
+                text += f"{name} | {weight}kg | {height}cm | BMI {bmi:.2f} | {status}\n"
+
+           self.history_page.history_label.setText(text)
+
+        # ใช้ index แทน widget (ชัวร์กว่า)
+           self.stack.setCurrentIndex(2)
+
+        except Exception as e:
+            QMessageBox.warning(self, "Error", str(e))
+     
         
 
 # =========================

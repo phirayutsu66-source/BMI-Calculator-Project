@@ -53,7 +53,6 @@ class ResultPage(QWidget):
         self.back_button = QPushButton(
             "◀️ย้อนกลับ"
         )
-
         # ===== เพิ่ม Widget =====
         layout.addWidget(self.result_label)
 
@@ -63,5 +62,6 @@ class ResultPage(QWidget):
 
         layout.addWidget(self.back_button)
 
+    
         # ===== ตั้ง Layout =====
         self.setLayout(layout)
