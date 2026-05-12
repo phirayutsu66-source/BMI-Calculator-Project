@@ -8,15 +8,14 @@ class HistoryPage(QWidget):
 
         layout = QVBoxLayout()
 
-        self.title = QLabel("📜 ประวัติ BMI")
-        self.title.setAlignment(Qt.AlignCenter)
+        
 
         self.history_label = QLabel("")
         self.history_label.setAlignment(Qt.AlignCenter)
 
         self.back_button = QPushButton("◀️ กลับ")
 
-        layout.addWidget(self.title)
+        
         layout.addWidget(self.history_label)
         layout.addWidget(self.back_button)
 

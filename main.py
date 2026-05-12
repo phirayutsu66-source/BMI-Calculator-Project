@@ -110,15 +110,38 @@ class MainWindow(QMainWindow):
         print("test")
 
         try:
-            weight = float(self.input_page.weight_input.text())
-            height = float(self.input_page.height_input.text())
+            # 1. ดึงค่าชื่อจากช่องกรอกชื่อ
+            name = self.input_page.name_input.text().strip()
+            if not name:
+                name = "ไม่ระบุชื่อ" # ป้องกันถ้าไม่ได้กรอกชื่อมา
 
-            if weight <= 0 or height <= 0:
-                QMessageBox.warning(self, "ข้อผิดพลาด", "กรุณากรอกค่ามากกว่า 0")
+            # 2. ดึงค่าตัวเลข
+            weight_str = self.input_page.weight_input.text()
+            height_str = self.input_page.height_input.text()
+
+            # ตรวจสอบว่ากรอกตัวเลขครบไหม
+            if not weight_str or not height_str:
+                QMessageBox.warning(self, "ข้อมูลไม่ครบ", "กรุณากรอกน้ำหนักและส่วนสูง")
                 return
 
+            weight = float(weight_str)
+            height = float(height_str)
+
+            # ป้องกันส่วนสูงเป็น 0 (หารด้วยศูนย์ไม่ได้)
+            if height <= 0:
+                QMessageBox.warning(self, "ข้อมูลไม่ถูกต้อง", "ส่วนสูงต้องมากกว่า 0")
+                return
+
+            # 3. คำนวณ (เรียกใช้ไฟล์ bmi_calculator.py)
             bmi = BMICalculator.calculate(weight, height)
+
+            if bmi is None:
+               raise Exception("BMI is None")
+
             status, advice, link = HealthAdvisor.get_advice(bmi)
+
+            # 4. บันทึกข้อมูล (ใช้ชื่อที่ดึงมาแทน "User")
+            self.db.insert(name, weight, height, bmi, status)
 
             if status == "ผอม":
                 self.result_page.result_label.setStyleSheet("""
@@ -150,8 +173,10 @@ class MainWindow(QMainWindow):
 
             self.stack.setCurrentWidget(self.result_page)
 
-        except:
-            QMessageBox.warning(self, "ข้อมูลไม่ถูกต้อง", "กรุณากรอกตัวเลขให้ถูกต้อง")
+        except ValueError:
+            QMessageBox.warning(self, "ข้อมูลไม่ถูกต้อง", "กรุณากรอกน้ำหนักและส่วนสูงเป็นตัวเลขเท่านั้น")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"เกิดข้อผิดพลาด: {str(e)}")
 
     # =========================
     # ประวัติ
