@@ -34,56 +34,69 @@ class MainWindow(QMainWindow):
 
         self.db = Database()
 
-        # =========================
-        # BMI Theme Style
-        # =========================
         self.setStyleSheet("""
-        QMainWindow {
-            background-color: #EAF7F0;
+        /* พื้นหลังหน้าต่าง: ใช้สีเทาอ่อนมากเกือบขาว เพื่อให้วัตถุดูเด่น */
+        QMainWindow, QWidget {
+            background-color: #F7F9F8;
+            font-family: 'Segoe UI', 'Kanit';
         }
 
-        QWidget {
-            background-color: #EAF7F0;
-            font-family: Segoe UI;
-        }
-
+        /* หัวข้อช่องกรอก: สีเขียวเข้มเพื่อความอ่านง่าย */
         QLabel {
-            color: #1B4332;
-            font-size: 16px;
-            font-weight: bold;
+            color: #2D6A4F;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
         }
 
+        /* ช่องกรอกข้อมูล: เน้นความมนและเงาบางๆ */
         QLineEdit {
-            background-color: white;
-            border: 2px solid #95D5B2;
+            background-color: #FFFFFF;
+            border: 2px solid #E0E0E0;
             border-radius: 12px;
-            padding: 10px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 15px;
             color: #333333;
         }
 
+        /* เมื่อคลิกที่ช่องกรอก: เปลี่ยนขอบเป็นสีเขียวมินต์สว่าง */
         QLineEdit:focus {
-            border: 2px solid #2D6A4F;
+            border: 2px solid #74C69D;
+            background-color: #FFFFFF;
         }
 
+        /* ปุ่มคำนวณ: ใช้การไล่เฉดสีเขียวมินต์ (Gradient) ให้ดูมีมิติ */
         QPushButton {
-            background-color: #2D6A4F;
+            background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, 
+                stop:0 #74C69D, stop:1 #40916C);
             color: white;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 15px;
+            padding: 15px;
+            border: none;
         }
 
+        /* เอฟเฟกต์ปุ่มตอนเอาเมาส์วาง: ให้ปุ่มสว่างขึ้นนิดนึง */
         QPushButton:hover {
-            background-color: #40916C;
+            background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, 
+                stop:0 #95D5B2, stop:1 #52B788);
         }
 
+        /* เอฟเฟกต์ตอนกด: ให้ปุ่มดูยุบลงไป */
         QPushButton:pressed {
-            background-color: #1B4332;
+            padding-top: 17px;
+            background-color: #2D6A4F;
+        }
+
+        /* ปุ่มดูประวัติ: ปรับให้ดูซอฟต์ลง ไม่แย่งซีนปุ่มหลัก */
+        QPushButton#history_button {
+            background-color: #D8F3DC;
+            color: #2D6A4F;
+            font-size: 14px;
+            border: 1px solid #B7E4C7;
         }
         """)
-
         # ===== Stacked Widget =====
         self.stack = QStackedWidget()
 
