@@ -9,6 +9,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS bmi_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
+            gender TEXT,
             weight REAL,
             height REAL,
             bmi REAL,
@@ -17,11 +18,13 @@ class Database:
         """)
         self.conn.commit()
 
-    def insert(self, name, weight, height, bmi, status):
-        self.cursor.execute("""
-        INSERT INTO bmi_history (name, weight, height, bmi, status)
-        VALUES (?, ?, ?, ?, ?)
-        """, (name, weight, height, bmi, status))
+    def insert(self, name, gender, weight, height, bmi, status): 
+        query = """
+            INSERT INTO bmi_history (name, gender, weight, height, bmi, status) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        """
+        # เพิ่ม gender ลงในลิสต์ข้อมูลที่จะบันทึก
+        self.cursor.execute(query, (name, gender, weight, height, bmi, status))
         self.conn.commit()
 
     def get_all(self):

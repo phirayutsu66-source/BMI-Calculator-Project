@@ -35,13 +35,13 @@ class MainWindow(QMainWindow):
         self.db = Database()
 
         self.setStyleSheet("""
-        /* พื้นหลังหน้าต่าง: ใช้สีเทาอ่อนมากเกือบขาว เพื่อให้วัตถุดูเด่น */
+        /* พื้นหลังหน้าต่าง */
         QMainWindow, QWidget {
             background-color: #F7F9F8;
             font-family: 'Segoe UI', 'Kanit';
         }
 
-        /* หัวข้อช่องกรอก: สีเขียวเข้มเพื่อความอ่านง่าย */
+        /* หัวข้อช่องกรอก */
         QLabel {
             color: #2D6A4F;
             font-size: 15px;
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
             margin-bottom: 2px;
         }
 
-        /* ช่องกรอกข้อมูล: เน้นความมนและเงาบางๆ */
+        /* ช่องกรอกข้อมูล */
         QLineEdit {
             background-color: #FFFFFF;
             border: 2px solid #E0E0E0;
@@ -59,13 +59,11 @@ class MainWindow(QMainWindow):
             color: #333333;
         }
 
-        /* เมื่อคลิกที่ช่องกรอก: เปลี่ยนขอบเป็นสีเขียวมินต์สว่าง */
         QLineEdit:focus {
             border: 2px solid #74C69D;
-            background-color: #FFFFFF;
         }
 
-        /* ปุ่มคำนวณ: ใช้การไล่เฉดสีเขียวมินต์ (Gradient) ให้ดูมีมิติ */
+        /* ปุ่มหลัก */
         QPushButton {
             background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, 
                 stop:0 #74C69D, stop:1 #40916C);
@@ -74,27 +72,65 @@ class MainWindow(QMainWindow):
             font-weight: bold;
             border-radius: 15px;
             padding: 15px;
-            border: none;
         }
 
-        /* เอฟเฟกต์ปุ่มตอนเอาเมาส์วาง: ให้ปุ่มสว่างขึ้นนิดนึง */
         QPushButton:hover {
             background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, 
                 stop:0 #95D5B2, stop:1 #52B788);
         }
 
-        /* เอฟเฟกต์ตอนกด: ให้ปุ่มดูยุบลงไป */
-        QPushButton:pressed {
-            padding-top: 17px;
-            background-color: #2D6A4F;
-        }
-
-        /* ปุ่มดูประวัติ: ปรับให้ดูซอฟต์ลง ไม่แย่งซีนปุ่มหลัก */
+        /* ปุ่มประวัติ */
         QPushButton#history_button {
             background-color: #D8F3DC;
             color: #2D6A4F;
             font-size: 14px;
             border: 1px solid #B7E4C7;
+        }
+
+        /* --- จุดที่แก้ไข: QComboBox (เพิ่มปิดปีกกาให้ครบ) --- */
+        QComboBox {
+            background-color: #FFFFFF;
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 15px;
+            color: #333333;
+        } /* <--- ตัวนี้แหละที่หายไป */
+
+        QComboBox::drop-down {
+            border: none;
+            width: 30px;
+        }
+
+        QAbstractItemView {
+            background-color: #FFFFFF;
+            selection-background-color: #74C69D;
+            selection-color: white;
+        }
+
+        /* --- แถม: สไตล์สำหรับ RadioButton (แบบจุด) --- */
+        QRadioButton {
+            font-size: 15px;
+            color: #2D6A4F;
+            spacing: 8px;
+        }
+        
+        QRadioButton::indicator {
+            width: 18px;
+            height: 18px;
+        }
+
+        QRadioButton::indicator:checked {
+            image: url(none); /* หรือใส่รูปจุดถ้ามี */
+            background-color: #40916C;
+            border: 2px solid #D8F3DC;
+            border-radius: 9px;
+        }
+        
+        QRadioButton::indicator:unchecked {
+            background-color: white;
+            border: 2px solid #E0E0E0;
+            border-radius: 9px;
         }
         """)
         # ===== Stacked Widget =====
@@ -128,6 +164,12 @@ class MainWindow(QMainWindow):
             if not name:
                 name = "ไม่ระบุชื่อ" # ป้องกันถ้าไม่ได้กรอกชื่อมา
 
+            # เช็คว่าถ้าปุ่ม "ชาย" ถูกติ๊ก ให้ gender เป็น "ชาย" ถ้าไม่ติ๊กก็เป็น "หญิง"
+            if self.input_page.male_radio.isChecked():
+                gender = "ชาย"
+            else:
+                gender = "หญิง"
+
             # 2. ดึงค่าตัวเลข
             weight_str = self.input_page.weight_input.text()
             height_str = self.input_page.height_input.text()
@@ -151,11 +193,11 @@ class MainWindow(QMainWindow):
             if bmi is None:
                raise Exception("BMI is None")
 
-            status, advice, link = HealthAdvisor.get_advice(bmi)
+            status, advice, link = HealthAdvisor.get_advice(bmi, gender)
 
             # 4. บันทึกข้อมูล (ใช้ชื่อที่ดึงมาแทน "User")
-            self.db.insert(name, weight, height, bmi, status)
-
+            self.db.insert(name, gender, weight, height, bmi, status)
+            self.result_page.gender_display.setText(f"เพศ: {gender}") # บรรทัดนี้แหละ!
             if status == "ผอม":
                 self.result_page.result_label.setStyleSheet("""
                 color: #2196F3;
@@ -201,8 +243,8 @@ class MainWindow(QMainWindow):
            text = "📜 ประวัติการคำนวณ BMI\n\n"
 
            for row in data:
-                _, name, weight, height, bmi, status = row
-                text += f"{name} | {weight}kg | {height}cm | BMI {bmi:.2f} | {status}\n"
+                _, name, gender, weight, height, bmi, status = row
+                text += f"{name}, เพศ{gender} | {weight}kg | {height}cm | BMI {bmi:.2f} | {status}\n"
 
            self.history_page.history_label.setText(text)
 
